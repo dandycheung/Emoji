@@ -53,6 +53,9 @@ public final class EmojiPopup implements EmojiResultReceiver.Receiver {
   boolean isPendingOpen;
   boolean isKeyboardOpen;
 
+  private int globalKeyboardHeight;
+  private int delay;
+
   @Nullable OnEmojiPopupShownListener onEmojiPopupShownListener;
   @Nullable OnSoftKeyboardCloseListener onSoftKeyboardCloseListener;
   @Nullable OnSoftKeyboardOpenListener onSoftKeyboardOpenListener;
@@ -213,6 +216,13 @@ public final class EmojiPopup implements EmojiResultReceiver.Receiver {
       popupWindow.setHeight(keyboardHeight);
     }
 
+    if (globalKeyboardHeight != keyboardHeight) {
+      globalKeyboardHeight = keyboardHeight;
+      delay = 250;
+    } else {
+      delay = 0;
+    }
+
     final int properWidth = Utils.getProperWidth(context);
 
     if (popupWindow.getWidth() != properWidth) {
@@ -322,8 +332,12 @@ public final class EmojiPopup implements EmojiResultReceiver.Receiver {
 
   void showAtBottom() {
     isPendingOpen = false;
-    popupWindow.showAtLocation(rootView, Gravity.NO_GRAVITY, 0,
-        Utils.getProperHeight(context) + popupWindowHeight);
+    editText.postDelayed(new Runnable() {
+      @Override public void run() {
+        popupWindow.showAtLocation(rootView, Gravity.NO_GRAVITY, 0,
+            Utils.getProperHeight(context) + popupWindowHeight);
+      }
+    }, delay);
 
     if (onEmojiPopupShownListener != null) {
       onEmojiPopupShownListener.onEmojiPopupShown();
